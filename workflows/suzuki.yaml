@@ -17,36 +17,40 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Debug: show repo tree
+      - name: Debug – показать структуру проекта
         run: |
-          echo "PWD:"
+          echo "Текущая директория:"
           pwd
-          echo "ROOT:"
+          echo "Файлы в корне:"
           ls -la
-          echo "backend/:"
+          echo "Файлы в backend/:"
           ls -la backend || true
-          echo "src/:"
-          ls -la src || true
+          echo "Файлы в backend/src/:"
+          ls -la backend/src || true
 
       - name: Set up Python
-        if: ${{ hashFiles('backend/requirements.txt') != '' }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: 'pip'
-          cache-dependency-path: backend/requirements.txt
 
       - name: Install dependencies (backend)
-        if: ${{ hashFiles('backend/requirements.txt') != '' }}
-        working-directory: backend
-        run: pip install -r requirements.txt
+        run: |
+          if [ -f backend/requirements.txt ]; then
+            echo "✅ Устанавливаю зависимости из backend/requirements.txt"
+            pip install -r backend/requirements.txt
+          else
+            echo "⚠️ Файл backend/requirements.txt не найден — пропускаю установку"
+          fi
 
       - name: Run simple test (backend)
-        if: ${{ hashFiles('backend/src/app.py') != '' }}
-        working-directory: backend
-        run: python src/app.py
-
-      # Если у тебя тесты/линтер в другом месте или другой командой — добавь здесь отдельные шаги.
+        run: |
+          if [ -f backend/src/app.py ]; then
+            echo "🚀 Запускаю backend/src/app.py"
+            python backend/src/app.py
+          else
+            echo "⚠️ Файл backend/src/app.py не найден — пропускаю тест"
+          fi
 
   docker:
     runs-on: ubuntu-latest
