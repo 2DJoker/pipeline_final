@@ -19,13 +19,13 @@ jobs:
 
       - name: Debug – показать структуру проекта
         run: |
-          echo "PWD:"
+          echo "📂 Текущая директория:"
           pwd
-          echo "Файлы в корне:"
+          echo "📄 Файлы в корне:"
           ls -la
-          echo "Файлы в backend/:"
+          echo "📁 Файлы в backend/:"
           ls -la backend || true
-          echo "Файлы в backend/src/:"
+          echo "📁 Файлы в backend/src/:"
           ls -la backend/src || true
 
       - name: Set up Python
@@ -68,7 +68,9 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          # 🔧 путь к Dockerfile внутри backend/
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/suzuki:latest
@@ -85,9 +87,9 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             ✅ Новая версия выпущена!
-            Образ: https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/suzuki
-            Тег: ${{ github.run_number }}
-            Инициатор: ${{ github.actor }}
+            🐳 Docker-образ: https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/suzuki
+            📦 Тег: ${{ github.run_number }}
+            👤 Инициатор: ${{ github.actor }}
 
   release:
     runs-on: ubuntu-latest
