@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write   # 💥 обязательно, чтобы можно было создавать теги и релизы
 
 jobs:
   test:
@@ -19,13 +19,13 @@ jobs:
 
       - name: Debug – показать структуру проекта
         run: |
-          echo "📂 Текущая директория:"
+          echo "PWD:"
           pwd
-          echo "📄 Файлы в корне:"
+          echo "Файлы в корне:"
           ls -la
-          echo "📁 Файлы в backend/:"
+          echo "Файлы в backend/:"
           ls -la backend || true
-          echo "📁 Файлы в backend/src/:"
+          echo "Файлы в backend/src/:"
           ls -la backend/src || true
 
       - name: Set up Python
@@ -68,7 +68,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          # 🔧 путь к Dockerfile внутри backend/
           context: ./backend
           file: ./backend/Dockerfile
           push: true
@@ -94,9 +93,16 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: telegram
+    permissions:
+      contents: write   # 👈 критично: разрешаем доступ к релизам и тегам
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # 🔥 без этого не сработает
         with:
           tag_name: v${{ github.run_number }}
           name: Release ${{ github.run_number }}
